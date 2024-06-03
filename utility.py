@@ -52,13 +52,14 @@ def check_face(unknown_image_path, users=[]):
             percentage = max(0, min(percentage, 100))
             results.append({
                 "id": user.id,
+                "image": user.image,
                 "name": user.name,
                 "about": user.about,
                 "match": f"{percentage}%"
             })
 
         results.sort(key=lambda x: float(x['match'].strip('%')), reverse=True)  # Sort based on match percentage
-        return results
+        return results[:5]
 
 # Fetch users from database
 # users = fetch_users_from_database()

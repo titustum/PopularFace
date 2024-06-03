@@ -3,14 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Details</title>
+    <title>Face Recognition</title>
 </head>
 <body>
-    <h1>Upload To Check Face</h1>
-    <form method="POST" enctype="multipart/form-data" action="{{ url_for('checkface') }}">
-        <label for="image">Image:</label>
-        <input type="file" id="image" name="image" required><br><br>
-        <input type="submit" value="Submit">
+    <h1>Face Recognition</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="image" id="image">
+        <input type="submit" value="Upload">
     </form>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let formData = new FormData(this);
+            fetch('/checkface', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayResults(data);
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        function displayResults(results) {
+            let resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = ''; // Clear previous results
+            results.forEach(function(result) {
+                let userDiv = document.createElement('div');
+                userDiv.innerHTML = `
+                    <h2>${result.name}</h2>
+                    <p> <img src="/static/uploads/${result.image}" style='width: 200px; border-radius: 10px'/> </p>
+                    <p>About: ${result.about}</p>
+                    <p>Match: <strong style='color: green'>${result.match}</strong></p>
+                `;
+                resultsDiv.appendChild(userDiv);
+            });
+        }
+    </script>
 </body>
 </html>

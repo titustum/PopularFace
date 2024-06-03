@@ -75,6 +75,10 @@ def get_user(user_id):
 def check_image():
     return render_template('upload_to_check.html')
 
+@app.route('/checkface/result', methods=['GET'])
+def check_face_result():
+    return render_template('check_face_result.html')
+
 
 
 from Utility import check_face
@@ -89,8 +93,7 @@ def checkface():
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
 
-    # Assuming you have a folder named 'uploads' to store uploaded images
-    filepath = os.path.join('images/unknown/', file.filename)
+    filepath = os.path.join('static/unknown/', file.filename)
     file.save(filepath)
 
     users = User.query.all()
