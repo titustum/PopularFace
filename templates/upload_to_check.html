@@ -6,14 +6,10 @@
     <title>Upload Details</title>
 </head>
 <body>
-    <h1>Upload Details</h1>
-    <form method="POST" enctype="multipart/form-data">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required><br><br>
+    <h1>Upload To Check Face</h1>
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('checkface') }}">
         <label for="image">Image:</label>
         <input type="file" id="image" name="image" required><br><br>
-        <label for="about">About:</label><br>
-        <textarea id="about" name="about" rows="4" cols="50" required></textarea><br><br>
         <input type="submit" value="Submit">
     </form>
 </body>

@@ -1,67 +1,71 @@
 import face_recognition
-import os
+import json
 import pickle
+from sqlalchemy import create_engine, Column, String, Text
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-class User:
-    def __init__(self, name, description) -> None:
-        self.name = name
-        self.description = description
+# Assuming you've already defined your User model
+Base = declarative_base()
 
-users = [
-    User("Njuguna Ndung’u","National Treasury and Planning"),
-    User("Dr. William Samoei Ruto, C.G.H", "The President of the Republic of Kenya and Commander-in-Chief of the Defence Forces"),
-    User("Hon. Rigathi Gachagua", "The Deputy President of the Republic of Kenya"),
-    User("Mr. Musalia Mudavadi", "Prime Cabinet Secretary and Foreign Affairs"),
-    User("Prof. Kithure Kindiki", "Interior and National Administration"),
-]
+class User(Base):
+    __tablename__ = 'user'
+    id = Column(String(36), primary_key=True)
+    name = Column(String(100))
+    image = Column(String(100), unique=True)
+    about = Column(Text)
 
+# Configure SQLAlchemy engine to connect to MySQL
+# Replace 'mysql://username:password@hostname:port/database_name' with your MySQL connection details
+engine = create_engine('mysql://root@localhost:3306/popularface')
 
+# Create database tables if they don't exist
+Base.metadata.create_all(engine)
 
-def create_face_encodings():
+# Create a session
+Session = sessionmaker(bind=engine)
+session = Session()
+
+def fetch_users_from_database():
+    return session.query(User).all()
+
+def create_face_encodings(users):
     known_face_encodings = []
-    for image_path in os.listdir('images/known/'):
-        image  = face_recognition.load_image_file(f"images/known/{image_path}")
+    for user in users:
+        image_path = f'static/uploads/{user.image}'
+        image = face_recognition.load_image_file(image_path)
         face_encoding = face_recognition.face_encodings(image)[0]
-        known_face_encodings.append(face_encoding) 
+        known_face_encodings.append(face_encoding)
 
-    #print(face_encodings)
-    
-    # Save face encodings in pickle file 
-    with open('data/face_encodings.pkl', 'wb') as file: 
-        pickle.dump(known_face_encodings, file) 
+    with open('data/face_encodings.pkl', 'wb') as file:
+        pickle.dump(known_face_encodings, file)
 
-
-
-
-
-def check_face(unknown_image_path):
-    with open('data/face_encodings.pkl', 'rb') as file: 
+def check_face(unknown_image_path, users=[]):
+    with open('data/face_encodings.pkl', 'rb') as file:
         known_face_encodings = pickle.load(file)
-        unknown_image  = face_recognition.load_image_file(unknown_image_path)
+        unknown_image = face_recognition.load_image_file(unknown_image_path)
         unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
+        distances =  face_recognition.face_distance(known_face_encodings, unknown_face_encoding)
+        
+        results = []
+        for user, distance in zip(users, distances):
+            percentage = round(((1 - distance) * 100), 2)
+            percentage = max(0, min(percentage, 100))
+            results.append({
+                "id": user.id,
+                "name": user.name,
+                "about": user.about,
+                "match": f"{percentage}%"
+            })
 
-        #print(unknown_face_encoding)
+        results.sort(key=lambda x: float(x['match'].strip('%')), reverse=True)  # Sort based on match percentage
+        return results
 
-        # result = face_recognition.compare_faces(known_face_encodings, unknown_face_encoding, tolerance=0.6)
-        return face_recognition.face_distance(known_face_encodings, unknown_face_encoding)
+# Fetch users from database
+# users = fetch_users_from_database()
 
-    
 
-# create_face_encodings()
+# # create_face_encodings(users) # Uncomment this if you haven't already created face encodings
 
-result = check_face("images/unknown/2.jpg")
-# print(result)
+# results = check_face("images/unknown/4.webp", users)
 
-results = []
-
-for user, distance in zip(users, result):
-    percentage = round(((1-distance)*100), 2)
-    percentage = max(0, min(percentage, 100))
-    results.append({
-        "name":user.name,
-        "description":user.description,
-        "match": f"{percentage}%"
-    })
-
-results.sort(key = lambda x: x['match'], reverse=True)
-print(results)
+# print(json.dumps(results))
