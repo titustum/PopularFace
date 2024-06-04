@@ -82,6 +82,7 @@ def check_face_result():
 
 
 from Utility import check_face
+import time
 
 @app.route('/checkface', methods=['POST'])
 def checkface():
@@ -93,14 +94,19 @@ def checkface():
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
 
-    filepath = os.path.join('static/unknown/', file.filename)
+    # Generate a unique filename based on the current time
+    current_time = time.strftime("%Y%m%d-%H%M%S")
+    filename = f"{current_time}_{file.filename}"
+
+    filepath = os.path.join('static/unknown/', filename)
     file.save(filepath)
 
     users = User.query.all()
     results = check_face(filepath, users)
-    os.remove(filepath)  # Remove the uploaded file after checking
+    # os.remove(filepath)  # Remove the uploaded file after checking
 
-    return jsonify(results)
+    return jsonify({"original_image": filepath, "results": results})
+
 
 
 if __name__ == '__main__': 

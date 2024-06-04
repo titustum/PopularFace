@@ -22,15 +22,32 @@
         <input type="file" id="file-input" style="display: none;" accept="image/*">
     </div>
     <div  class="w-[90%] mx-auto mt-6">
-        <div class="grid grid-cols-3 gap-3" id="results">
-            <!-- <div class="bg-white rounded-md p-2 grid grid-cols-2 gap-2">
-                <img src="static/uploads/1ba70e30-98b9-49fc-9dc4-4ff446836c70.png" alt=""class="rounded">
-                <div>
-                    <h1 class="text-xl font-bold py-2 border-b-2 border-orange-600">Name: James Okay</h1>
-                    <h1 class="mt-3 text-green-600">Match: 70%</h1>
-                    <p class="mt-3">PS TVET</p>
+        <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
+ 
+                <div class="p-2 grid md:col-span-2 md:grid-cols-2 gap-4 bg-white rounded-md" id="top_result">
+                    
+                    <!-- top result comes here -->
+
+                </div> 
+                
+                
+                <div class="flex flex-col col-span-2 xl:col-span-1 rounded-md">
+
+                    <h1 class="text-xl font-bold py-3 px-2 bg-white rounded-t-md">Other Revelant Close Matches</h1>
+
+                    <div id="other_results">
+                        
+                        
+                        <!-- other relevant results will be listed here -->
+
+
+                    </div>
+
+                     
                 </div>
-            </div> -->
+
+
+           
         </div>
     </div>
 
@@ -56,24 +73,92 @@
         }
 
         // Function to display results
-        function displayResults(results) {
-            let resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = ''; // Clear previous results
-            results.forEach(function(result) {
-                let userDiv = document.createElement('div');
-                userDiv.innerHTML = `
+        function displayResults(data) {
 
-                <div class="bg-white rounded-md p-2 grid grid-cols-2 gap-2">
-                    <img src="/static/uploads/${result.image}" alt=""class="rounded h-[30vh] w-full object-cover">
+            console.log(data)
+
+            let top_res  = document.getElementById('top_result')
+            let other_res  = document.getElementById('other_results')
+            
+            top_res.innerHTML = ''
+            other_res.innerHTML = ''
+
+            top_result = data.results[0]
+
+            let topResultHTML = `
+                    
                     <div>
-                        <h1 class="text-xl font-bold py-2 border-b-2 border-orange-600">Name: ${result.name}</h1>
-                        <h1 class="mt-3 text-green-600">Match: ${result.match}</h1>
-                        <p class="mt-3">${result.about}</</p>
+                        <div class="grid grid-cols-2 gap-1">
+                            <button id="btn1" onclick="document.getElementById('main_image').src = '${data.original_image}'; this.classList.remove('bg-gray-300', 'text-black'); document.getElementById('btn2').classList.remove('bg-black', 'text-white'); this.classList.add('bg-black', 'text-white')" class="text-black text-lg font-semibold rounded py-2 px-3">Uploaded Image</button>
+                            <button id="btn2" onclick="document.getElementById('main_image').src = '/static/uploads/${top_result.image}'; this.classList.remove('bg-gray-300', 'text-black'); document.getElementById('btn1').classList.remove('bg-black', 'text-white'); this.classList.add('bg-black', 'text-white')" class="bg-black text-white text-lg font-semibold rounded py-2 px-3">Known Image</button>
+                        </div>
+                        <img id="main_image" src="/static/uploads/${top_result.image}" alt="" class="rounded mt-2 w-full h-[50vh] object-cover object-top">
+                    </div>
+
+                   
+                    <div class="flex flex-col">
+                        <div class="flex flex justify-between items-center border-b-2 border-orange-600">
+                            <h1 class="text-4xl font-bold py-2 uppercase">${top_result.name} </h1>
+                            <span class="text-green-600">${top_result.match} Match</span>
+                        </div>
+ 
+                        
+                         <div class="flex flex-col flex-grow">
+                            <div class="py-2 text-orange-700 text-lg">
+                                ${top_result.about}
+                            </div>
+                            <div class="p-2">
+                            Her Excellency Mrs. Rachel Ruto is the First Lady of the Republic of Kenya.<br>
+                            She is a thought leader on the Environment and Climate Action, Financial inclusion and Women Empowerment.<br>
+                            She is the Founder and Patron of Mama Doing Good and a champion of Faith Diplomacy, Mental Health and Wellness.<br>
+                            In 2009, Her Excellency, founded Joyful Women Organization, an initiative to financially empower rural women.<br>
+                            Mrs Ruto has received various awards notably, the State Commendation Elder of the Golden Heart (EGH)....
+                            </div>
+                            
+                            <div class="mt-auto">
+                                <div class="flex items-center">
+                                    <button class="py-2 px-4 bg-gray-200 text-black rounded-md hover:text-green-600">
+                                        <i class="fas fa-thumbs-up text-xl"></i>
+                                    </button>
+                                    <button class="ml-4 py-2 px-4 bg-gray-200 text-black rounded-md hover:text-green-600">
+                                        <i class="fas fa-thumbs-down text-xl"></i>
+                                    </button>  
+                                    <button class="ml-auto py-2 px-4 bg-gray-200 text-black rounded-md hover:text-green-600">
+                                        <i class="fas fa-share text-xl"></i>
+                                    </button>  
+                                </div>
+                            </div>
+                            <!-- <button class="px-5 mt-auto py-2 text-white bg-blue-600 rounded-md font-medium hover:opacity-80">Rportead More</button> -->
+                        </div>
+                    </div> 
+
+            `
+
+
+            data.results.splice(0, 1)
+
+
+
+            let other_res_html = ''
+
+            data.results.forEach(function(result) {
+                other_res_html += `
+
+                <div class="bg-white rounded-md p-2 mt-2 flex">
+                    <img src="/static/uploads/${result.image}" alt=""class="h-[70px] w-[70px] object-cover shrink-0 rounded-md">
+                    <div class="ml-3">
+                        <h1 class="text-xl font-semibold">${result.name}</h1>
+                        <div>${result.about}</div> 
+                        <div class="text-green-600">${result.match} Match</div>
                     </div>
                 </div> 
-                `;
-                resultsDiv.appendChild(userDiv);
+                `; 
             });
+
+            top_res.innerHTML = topResultHTML
+            other_res.innerHTML = other_res_html
+
+
         }
 
         // Drag & drop event listeners
