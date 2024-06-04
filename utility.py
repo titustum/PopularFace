@@ -1,7 +1,7 @@
 import face_recognition
-import json
+from datetime import datetime, timezone 
 import pickle
-from sqlalchemy import create_engine, Column, String, Text
+from sqlalchemy import create_engine, Column, String, Text, DateTime, Integer
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 # Assuming you've already defined your User model
@@ -9,10 +9,14 @@ Base = declarative_base()
 
 class User(Base):
     __tablename__ = 'user'
-    id = Column(String(36), primary_key=True)
-    name = Column(String(100))
-    image = Column(String(100), unique=True)
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String(36), unique=True)
+    name = Column(String(200))
+    image = Column(String(200), unique=True)
+    occupation = Column(String(200), unique=True)
     about = Column(Text)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
 # Configure SQLAlchemy engine to connect to MySQL
 # Replace 'mysql://username:password@hostname:port/database_name' with your MySQL connection details
@@ -26,7 +30,7 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 def fetch_users_from_database():
-    return session.query(User).all()
+    return session.query(User).order_by(User.created_at).all()
 
 def create_face_encodings(users):
     known_face_encodings = []
@@ -34,29 +38,52 @@ def create_face_encodings(users):
         image_path = f'static/uploads/{user.image}'
         image = face_recognition.load_image_file(image_path)
         face_encoding = face_recognition.face_encodings(image)[0]
-        known_face_encodings.append(face_encoding)
+        known_face_encodings.append([user.id,face_encoding])
 
     with open('data/face_encodings.pkl', 'wb') as file:
+        # print(known_face_encodings)
         pickle.dump(known_face_encodings, file)
 
 def check_face(unknown_image_path, users=[]):
     with open('data/face_encodings.pkl', 'rb') as file:
-        known_face_encodings = pickle.load(file)
+        encodings = pickle.load(file)
+
+        user_ids = []
+        known_face_encodings = []
+
+        for user_id, known_face_encoding in encodings:
+            user_ids.append(user_id)
+            known_face_encodings.append(known_face_encoding)
+
         unknown_image = face_recognition.load_image_file(unknown_image_path)
         unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
         distances =  face_recognition.face_distance(known_face_encodings, unknown_face_encoding)
+
+        user_id_distances = []
+
+        for id, distance in zip(user_ids, distances):
+            user_id_distances.append([id, distance])
+
+        # print(user_id_distances)
         
         results = []
-        for user, distance in zip(users, distances):
-            percentage = round(((1 - distance) * 100), 2)
-            percentage = max(0, min(percentage, 100))
-            results.append({
-                "id": user.id,
-                "image": user.image,
-                "name": user.name,
-                "about": user.about,
-                "match": f"{percentage}%"
-            })
+
+        counter  = 0
+
+        for user in users:
+            if user.id in user_ids:
+                percentage = round(((1 - distances[counter]) * 100), 2)
+                percentage = max(0, min(percentage, 100))
+                user.about = user.about if len(user.about) <= 300 else user.about[:300] + "..."
+                results.append({
+                     "id": user.id,
+                    "image": user.image,
+                    "name": user.name,
+                    "occupation": user.occupation,
+                    "about": user.about,
+                    "match": f"{percentage}%"  
+                })
+                counter += 1
 
         results.sort(key=lambda x: float(x['match'].strip('%')), reverse=True)  # Sort based on match percentage
         return results[:5]
@@ -68,3 +95,5 @@ def check_face(unknown_image_path, users=[]):
 # results = check_face("images/unknown/4.webp", users)
 
 # print(json.dumps(results))
+
+# check_face("static/unknown/20240604-232156_download (10).jpg")

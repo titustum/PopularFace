@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.sql import func
-import os, json
+from flask_sqlalchemy import SQLAlchemy 
+import os
+from datetime import datetime, timezone 
 import uuid
 from werkzeug.utils import secure_filename
 
@@ -18,18 +18,23 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Define a model for the database table
+
 class User(db.Model):
-    id = db.Column(db.String(36), primary_key=True)  # UUID as primary key
-    name = db.Column(db.String(100))
-    image = db.Column(db.String(100), unique=True)  # Unique filename for image
-    about = db.Column(db.Text) 
+    id = db.Column(db.Integer, primary_key=True) #Autoincrement
+    uuid = db.Column(db.String(36), unique=True)
+    name = db.Column(db.String(200))
+    image = db.Column(db.String(200), unique=True)  # Unique filename for image
+    occupation = db.Column(db.String(200))
+    about = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
 
 
 # Route to recognize faces
 @app.route('/', methods=['GET'])
 def check_image():
-    return render_template('upload_to_check.html')
+    return render_template('index.html')
 
 
 # Route to upload details
@@ -37,11 +42,12 @@ def check_image():
 def upload_details():
     if request.method == 'POST':
         name = request.form['name']
+        occupation = request.form['occupation']
         about = request.form['about']
         image = request.files['image']
 
         # Generate a UUID for the user
-        user_id = str(uuid.uuid4())
+        user_uid = str(uuid.uuid4())
         # Generate a unique filename for the image
         image_filename = str(uuid.uuid4())
 
@@ -55,7 +61,7 @@ def upload_details():
         image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename + image_ext))
 
         # Create a new user instance
-        new_user = User(id=user_id, name=name, about=about, image=filename + image_ext)
+        new_user = User(uuid=user_uid, name=name, about=about, occupation=occupation, image=filename + image_ext)
 
         # Add the new user to the database
         db.session.add(new_user)
@@ -79,12 +85,6 @@ def get_user(user_id):
     return jsonify(user_detail)
 
 
-@app.route('/checkface/result', methods=['GET'])
-def check_face_result():
-    return render_template('check_face_result.html')
-
-
-
 from Utility import check_face
 import time
 
@@ -97,6 +97,13 @@ def checkface():
 
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
+    
+    # Remove all available images in the folder
+    folder_path = 'static/unknown/'
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
 
     # Generate a unique filename based on the current time
     current_time = time.strftime("%Y%m%d-%H%M%S")
@@ -105,9 +112,8 @@ def checkface():
     filepath = os.path.join('static/unknown/', filename)
     file.save(filepath)
 
-    users = User.query.all()
-    results = check_face(filepath, users)
-    # os.remove(filepath)  # Remove the uploaded file after checking
+    users = User.query.order_by(User.created_at).all()
+    results = check_face(filepath, users) 
 
     return jsonify({"original_image": filepath, "results": results})
 
