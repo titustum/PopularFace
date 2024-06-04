@@ -24,8 +24,16 @@ class User(db.Model):
     image = db.Column(db.String(100), unique=True)  # Unique filename for image
     about = db.Column(db.Text) 
 
+
+
+# Route to recognize faces
+@app.route('/', methods=['GET'])
+def check_image():
+    return render_template('upload_to_check.html')
+
+
 # Route to upload details
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/upload', methods=['GET', 'POST'])
 def upload_details():
     if request.method == 'POST':
         name = request.form['name']
@@ -71,10 +79,6 @@ def get_user(user_id):
     return jsonify(user_detail)
 
 
-@app.route('/checkface', methods=['GET'])
-def check_image():
-    return render_template('upload_to_check.html')
-
 @app.route('/checkface/result', methods=['GET'])
 def check_face_result():
     return render_template('check_face_result.html')
@@ -113,4 +117,4 @@ if __name__ == '__main__':
     with app.app_context():
         # Create the database tables before running the app
         db.create_all()
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")

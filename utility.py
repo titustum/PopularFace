@@ -63,9 +63,7 @@ def check_face(unknown_image_path, users=[]):
 
 # Fetch users from database
 # users = fetch_users_from_database()
-
-
-# # create_face_encodings(users) # Uncomment this if you haven't already created face encodings
+# create_face_encodings(users) # Uncomment this if you haven't already created face encodings
 
 # results = check_face("images/unknown/4.webp", users)
 
