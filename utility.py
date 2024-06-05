@@ -52,10 +52,13 @@ def create_face_encodings():
     with open('data/face_encodings.pkl', 'wb') as file:
         # print(known_face_encodings)
         pickle.dump(known_face_encodings, file)
+ 
 
 def check_face(unknown_image_path):
-    with open('data/face_encodings.pkl', 'rb') as file:
-        encodings = pickle.load(file)
+    try:
+        # Load known face encodings from pickle file
+        with open('data/face_encodings.pkl', 'rb') as file:
+            encodings = pickle.load(file)
 
         user_ids = []
         known_face_encodings = []
@@ -64,22 +67,28 @@ def check_face(unknown_image_path):
             user_ids.append(user_id)
             known_face_encodings.append(known_face_encoding)
 
+        # Load unknown image
         unknown_image = face_recognition.load_image_file(unknown_image_path)
+
+        # Compute face encoding for unknown image
         unknown_face_encoding = face_recognition.face_encodings(unknown_image)[0]
-        distances =  face_recognition.face_distance(known_face_encodings, unknown_face_encoding)
+
+        # Calculate distances between unknown face encoding and known face encodings
+        distances = face_recognition.face_distance(known_face_encodings, unknown_face_encoding)
 
         user_id_distances = []
 
         for id, distance in zip(user_ids, distances):
             user_id_distances.append([id, distance])
 
-        print(user_id_distances)
+        # print(user_id_distances)
         
         results = []
 
-        counter  = 0
+        counter = 0
 
-        users  = fetch_specified_users(user_ids)
+        # Fetch specified users from the database
+        users = fetch_specified_users(user_ids)
 
         for user in users:
             if user.id in user_ids:
@@ -98,6 +107,11 @@ def check_face(unknown_image_path):
 
         results.sort(key=lambda x: float(x['match'].strip('%')), reverse=True)  # Sort based on match percentage
         return results[:5]
+    
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return []
+
 
 # Fetch users from database
 # users = fetch_users_from_database()
