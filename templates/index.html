@@ -1,230 +1,218 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PopularFace.ai</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
-    
-</head>
-<body class="bg-gray-200" style="font-family: 'Roboto','Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-    <nav class="bg-black py-2 text-white">
-        <div class="w-[90%] mx-auto">
-            <h1 class="text-3xl font-bold">PopularFace<span class="text-green-600">.ai</span></h1>
-        </div> 
-        
-    </nav>
+{% extends 'layout.html' %}
 
 
-    <div id="drop-area" class="rounded w-[90%] mx-auto mt-6 py-10 font-medium bg-white border-green-600 border-dashed border-2 text-center">
-        <p><i class="fas fa-upload text-green-600 text-3xl"></i></p>
-        <p>Drag & drop images here or click to select</p>
-        <input type="file" id="file-input" style="display: none;" accept="image/*">
-    </div>
-    <div  class="w-[90%] min-h-[50vh] mx-auto mt-6">
-        <div class="grid md:grid-cols-2 xl:grid-cols-3 md:gap-3">
- 
-                <div class="p-2 grid md:col-span-2 md:grid-cols-2 gap-4 bg-white rounded-md" id="top_result">
+{% block content %}
+
+
+<div id="drop-area" class="rounded w-[90%] mx-auto mt-6 py-10 font-medium bg-white border-green-600 border-dashed border-2 text-center">
+    <p><i class="fas fa-upload text-green-600 text-3xl"></i></p>
+    <p>Drag & drop unknown people images here or click to select</p>
+    <input type="file" id="file-input" style="display: none;" accept="image/*">
+</div>
+<div  class="w-[90%] min-h-[50vh] mx-auto mt-6">
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 md:gap-3">
+
+            <div class="p-2 grid md:col-span-2 md:grid-cols-2 gap-4 bg-white rounded-md" id="top_result">
+                
+                <!-- top result comes here -->
+
+            </div> 
+            
+            
+            <div class="flex flex-col col-span-2 xl:col-span-1 rounded-md">
+
+                <h1 class="text-xl font-bold py-3 px-2 bg-white mt-3 md:mt-0 rounded-t-md">Other Revelant Close Matches</h1>
+
+                <div id="other_results">
                     
-                    <!-- top result comes here -->
-
-                </div> 
-                
-                
-                <div class="flex flex-col col-span-2 xl:col-span-1 rounded-md">
-
-                    <h1 class="text-xl font-bold py-3 px-2 bg-white mt-3 md:mt-0 rounded-t-md">Other Revelant Close Matches</h1>
-
-                    <div id="other_results">
-                        
-                        
-                        <!-- other relevant results will be listed here -->
+                    
+                    <!-- other relevant results will be listed here -->
 
 
-                    </div>
-
-                     
                 </div>
 
+                 
+            </div>
 
-           
-        </div>
+
+       
     </div>
+</div>
 
 
 
-    <footer class="bg-gray-300 h-[30vh] mt-8 ">
+<footer class="bg-gray-300 h-[30vh] mt-8 ">
 
-    </footer>
+</footer>
 
-    <script>
-        // Function to handle file input change
-        function handleFiles(files) {
-            let formData = new FormData();
-            formData.append('image', files[0]);
-            submitForm(formData);
-        }
+<script>
+    // Function to handle file input change
+    function handleFiles(files) {
+        let formData = new FormData();
+        formData.append('image', files[0]);
+        submitForm(formData);
+    }
 
-        // Function to submit form data
-        function submitForm(formData) {
-            fetch('/checkface', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                displayResults(data);
-            })
-            .catch(error => console.error('Error:', error));
-        }
+    // Function to submit form data
+    function submitForm(formData) {
+        fetch('/checkface', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayResults(data);
+        })
+        .catch(error => console.error('Error:', error));
+    }
 
-        // Function to display results
-        function displayResults(data) {
+    // Function to display results
+    function displayResults(data) {
 
-            console.log(data)
+        console.log(data)
 
-            let top_res  = document.getElementById('top_result')
-            let other_res  = document.getElementById('other_results')
-            
-            top_res.innerHTML = ''
-            other_res.innerHTML = ''
+        let top_res  = document.getElementById('top_result')
+        let other_res  = document.getElementById('other_results')
+        
+        top_res.innerHTML = ''
+        other_res.innerHTML = ''
 
-            top_result = data.results[0]
+        top_result = data.results[0]
 
-            let topResultHTML = `
-                    
-                    <div>
-                        <div class="grid grid-cols-2 gap-1">
-                            <button id="btn1" onclick="document.getElementById('main_image').src = '${data.original_image}'; this.classList.remove('bg-gray-300', 'text-black'); document.getElementById('btn2').classList.remove('bg-black', 'text-white'); this.classList.add('bg-black', 'text-white')" class="text-black text-lg font-semibold rounded py-2 px-3">Uploaded Image</button>
-                            <button id="btn2" onclick="document.getElementById('main_image').src = '/static/uploads/${top_result.image}'; this.classList.remove('bg-gray-300', 'text-black'); document.getElementById('btn1').classList.remove('bg-black', 'text-white'); this.classList.add('bg-black', 'text-white')" class="bg-black text-white text-lg font-semibold rounded py-2 px-3">Known Image</button>
-                        </div>
-                        <img id="main_image" src="/static/uploads/${top_result.image}" alt="" class="rounded mt-2 w-full h-[50vh] object-cover object-top">
+        let topResultHTML = `
+                
+                <div>
+                    <div class="grid grid-cols-2 gap-1">
+                        <button id="btn1" onclick="document.getElementById('main_image').src = '${data.original_image}'; this.classList.remove('bg-gray-300', 'text-black'); document.getElementById('btn2').classList.remove('bg-black', 'text-white'); this.classList.add('bg-black', 'text-white')" class="text-black text-lg font-semibold rounded py-2 px-3">Uploaded Image</button>
+                        <button id="btn2" onclick="document.getElementById('main_image').src = '/static/uploads/${top_result.image}'; this.classList.remove('bg-gray-300', 'text-black'); document.getElementById('btn1').classList.remove('bg-black', 'text-white'); this.classList.add('bg-black', 'text-white')" class="bg-black text-white text-lg font-semibold rounded py-2 px-3">Known Image</button>
+                    </div>
+                    <img id="main_image" src="/static/uploads/${top_result.image}" alt="" class="rounded mt-2 w-full h-[50vh] object-cover object-top">
+                </div>
+
+               
+                <div class="flex flex-col">
+                    <div class="flex flex justify-between items-center border-b-2 border-orange-600">
+                        <h1 class="text-4xl font-bold py-2 uppercase">${top_result.name} </h1>
+                        <span class="text-green-600">${top_result.match} Match</span>
                     </div>
 
-                   
-                    <div class="flex flex-col">
-                        <div class="flex flex justify-between items-center border-b-2 border-orange-600">
-                            <h1 class="text-4xl font-bold py-2 uppercase">${top_result.name} </h1>
-                            <span class="text-green-600">${top_result.match} Match</span>
+                    
+                     <div class="flex flex-col flex-grow">
+                        <div class="py-2 text-orange-700 text-lg">
+                            ${top_result.occupation}
                         </div>
- 
+                        <div class="p-2">
+                            ${top_result.about}
+                        </div>
                         
-                         <div class="flex flex-col flex-grow">
-                            <div class="py-2 text-orange-700 text-lg">
-                                ${top_result.occupation}
+                        <div class="mt-auto">
+                            <div class="flex items-center">
+                                <button class="py-2 px-4 bg-gray-200 text-black rounded-md hover:text-green-600">
+                                    <i class="fas fa-thumbs-up text-xl"></i>
+                                </button>
+                                <button class="ml-4 py-2 px-4 bg-gray-200 text-black rounded-md hover:text-green-600">
+                                    <i class="fas fa-thumbs-down text-xl"></i>
+                                </button>  
+                                <button class="ml-auto py-2 px-4 bg-gray-200 text-black rounded-md hover:text-green-600">
+                                    <i class="fas fa-share text-xl"></i>
+                                </button>  
                             </div>
-                            <div class="p-2">
-                                ${top_result.about}
-                            </div>
-                            
-                            <div class="mt-auto">
-                                <div class="flex items-center">
-                                    <button class="py-2 px-4 bg-gray-200 text-black rounded-md hover:text-green-600">
-                                        <i class="fas fa-thumbs-up text-xl"></i>
-                                    </button>
-                                    <button class="ml-4 py-2 px-4 bg-gray-200 text-black rounded-md hover:text-green-600">
-                                        <i class="fas fa-thumbs-down text-xl"></i>
-                                    </button>  
-                                    <button class="ml-auto py-2 px-4 bg-gray-200 text-black rounded-md hover:text-green-600">
-                                        <i class="fas fa-share text-xl"></i>
-                                    </button>  
-                                </div>
-                            </div>
-                            <!-- <button class="px-5 mt-auto py-2 text-white bg-blue-600 rounded-md font-medium hover:opacity-80">Rportead More</button> -->
                         </div>
-                    </div> 
-
-            `
-
-
-            data.results.splice(0, 1)
-
-
-
-            let other_res_html = ''
-
-            data.results.forEach(function(result) {
-                other_res_html += `
-
-                <div class="bg-white rounded-md p-2 mt-2 flex">
-                    <img src="/static/uploads/${result.image}" alt=""class="h-[70px] w-[70px] object-cover shrink-0 rounded-md">
-                    <div class="ml-3">
-                        <h1 class="text-xl font-semibold">${result.name}</h1>
-                        <div>${result.occupation}</div> 
-                        <div class="text-green-600">${result.match} Match</div>
+                        <!-- <button class="px-5 mt-auto py-2 text-white bg-blue-600 rounded-md font-medium hover:opacity-80">Rportead More</button> -->
                     </div>
                 </div> 
-                `; 
-            });
 
-            top_res.innerHTML = topResultHTML
-            other_res.innerHTML = other_res_html
+        `
 
 
-        }
+        data.results.splice(0, 1)
 
-        // Drag & drop event listeners
-        let dropArea = document.getElementById('drop-area');
 
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, preventDefaults, false);
+
+        let other_res_html = ''
+
+        data.results.forEach(function(result) {
+            other_res_html += `
+
+            <div class="bg-white rounded-md p-2 mt-2 flex">
+                <img src="/static/uploads/${result.image}" alt=""class="h-[70px] w-[70px] object-cover shrink-0 rounded-md">
+                <div class="ml-3">
+                    <h1 class="text-xl font-semibold">${result.name}</h1>
+                    <div>${result.occupation}</div> 
+                    <div class="text-green-600">${result.match} Match</div>
+                </div>
+            </div> 
+            `; 
         });
 
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
+        top_res.innerHTML = topResultHTML
+        other_res.innerHTML = other_res_html
 
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropArea.addEventListener(eventName, highlight, false);
-        });
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, unhighlight, false);
-        });
+    }
 
-        function highlight(e) {
-            dropArea.style.background = '#f2f2f2';
-        }
+    // Drag & drop event listeners
+    let dropArea = document.getElementById('drop-area');
 
-        function unhighlight(e) {
-            dropArea.style.background = '';
-        }
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+    });
 
-        dropArea.addEventListener('drop', handleDrop, false);
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
 
-        function handleDrop(e) {
-            let dt = e.dataTransfer;
-            let files = dt.files;
-            handleFiles(files);
-        }
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
 
-        // Paste event listener
-        document.addEventListener('paste', handlePaste);
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
 
-        function handlePaste(e) {
-            let items = e.clipboardData.items;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    let blob = items[i].getAsFile();
-                    let files = [blob];
-                    handleFiles(files);
-                    break;
-                }
+    function highlight(e) {
+        dropArea.style.background = '#f2f2f2';
+    }
+
+    function unhighlight(e) {
+        dropArea.style.background = '';
+    }
+
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        let dt = e.dataTransfer;
+        let files = dt.files;
+        handleFiles(files);
+    }
+
+    // Paste event listener
+    document.addEventListener('paste', handlePaste);
+
+    function handlePaste(e) {
+        let items = e.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                let blob = items[i].getAsFile();
+                let files = [blob];
+                handleFiles(files);
+                break;
             }
         }
+    }
 
-        // Click event listener for file input
-        let fileInput = document.getElementById('file-input');
-        dropArea.addEventListener('click', () => {
-            fileInput.click();
-        });
+    // Click event listener for file input
+    let fileInput = document.getElementById('file-input');
+    dropArea.addEventListener('click', () => {
+        fileInput.click();
+    });
 
-        fileInput.addEventListener('change', () => {
-            handleFiles(fileInput.files);
-        });
-    </script>
-</body>
-</html>
+    fileInput.addEventListener('change', () => {
+        handleFiles(fileInput.files);
+    });
+</script>
+
+
+
+{% endblock %}

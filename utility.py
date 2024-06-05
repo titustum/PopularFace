@@ -1,8 +1,12 @@
 import face_recognition
 from datetime import datetime, timezone 
 import pickle
+import os
 from sqlalchemy import create_engine, Column, String, Text, DateTime, Integer
 from sqlalchemy.orm import declarative_base, sessionmaker
+
+from dotenv import load_dotenv
+load_dotenv()
 
 # Assuming you've already defined your User model
 Base = declarative_base()
@@ -20,7 +24,7 @@ class User(Base):
 
 # Configure SQLAlchemy engine to connect to MySQL
 # Replace 'mysql://username:password@hostname:port/database_name' with your MySQL connection details
-engine = create_engine('mysql://root@localhost:3306/popularface')
+engine = create_engine(os.getenv("DATABASE_URL"))
 
 # Create database tables if they don't exist
 Base.metadata.create_all(engine)
@@ -32,8 +36,13 @@ session = Session()
 def fetch_users_from_database():
     return session.query(User).order_by(User.created_at).all()
 
-def create_face_encodings(users):
+# fetch_specified_users
+def fetch_specified_users(specified_ids=[]):
+    return session.query(User).filter(User.id.in_(specified_ids)).order_by(User.created_at).all()
+
+def create_face_encodings():
     known_face_encodings = []
+    users = fetch_users_from_database()
     for user in users:
         image_path = f'static/uploads/{user.image}'
         image = face_recognition.load_image_file(image_path)
@@ -44,7 +53,7 @@ def create_face_encodings(users):
         # print(known_face_encodings)
         pickle.dump(known_face_encodings, file)
 
-def check_face(unknown_image_path, users=[]):
+def check_face(unknown_image_path):
     with open('data/face_encodings.pkl', 'rb') as file:
         encodings = pickle.load(file)
 
@@ -64,17 +73,19 @@ def check_face(unknown_image_path, users=[]):
         for id, distance in zip(user_ids, distances):
             user_id_distances.append([id, distance])
 
-        # print(user_id_distances)
+        print(user_id_distances)
         
         results = []
 
         counter  = 0
 
+        users  = fetch_specified_users(user_ids)
+
         for user in users:
             if user.id in user_ids:
                 percentage = round(((1 - distances[counter]) * 100), 2)
                 percentage = max(0, min(percentage, 100))
-                user.about = user.about if len(user.about) <= 300 else user.about[:300] + "..."
+                user.about = user.about if len(user.about) <= 500 else user.about[:300] + "..."
                 results.append({
                      "id": user.id,
                     "image": user.image,
@@ -90,7 +101,7 @@ def check_face(unknown_image_path, users=[]):
 
 # Fetch users from database
 # users = fetch_users_from_database()
-# create_face_encodings(users) # Uncomment this if you haven't already created face encodings
+# create_face_encodings() # Uncomment this if you haven't already created face encodings
 
 # results = check_face("images/unknown/4.webp", users)
 

@@ -1,17 +1,23 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
 from flask_sqlalchemy import SQLAlchemy 
 import os
 from datetime import datetime, timezone 
 import uuid
 from werkzeug.utils import secure_filename
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 app = Flask(__name__)
 
-app.config['UPLOAD_FOLDER'] = 'static/uploads/'
+app.config['UPLOAD_FOLDER'] = os.getenv("UPLOAD_FOLDER")
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY") 
 
 # Configure the MySQL database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root@localhost/popularface'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root@localhost/popularface'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy
@@ -20,14 +26,15 @@ db = SQLAlchemy(app)
 # Define a model for the database table
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True) #Autoincrement
+    id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(db.String(36), unique=True)
-    name = db.Column(db.String(200))
-    image = db.Column(db.String(200), unique=True)  # Unique filename for image
+    name = db.Column(db.String(200), unique=True)
+    image = db.Column(db.String(200))
     occupation = db.Column(db.String(200))
     about = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+
 
 
 
@@ -67,7 +74,9 @@ def upload_details():
         db.session.add(new_user)
         db.session.commit()
 
+        flash(f"{name} user has been added successfully!")
         return redirect(url_for('upload_details'))
+    
     return render_template('upload.html')
 
 
@@ -85,7 +94,7 @@ def get_user(user_id):
     return jsonify(user_detail)
 
 
-from Utility import check_face
+from utility import check_face, create_face_encodings
 import time
 
 @app.route('/checkface', methods=['POST'])
@@ -112,11 +121,18 @@ def checkface():
     filepath = os.path.join('static/unknown/', filename)
     file.save(filepath)
 
-    users = User.query.order_by(User.created_at).all()
-    results = check_face(filepath, users) 
+    # users = User.query.order_by(User.created_at).all()
+    results = check_face(filepath) 
 
     return jsonify({"original_image": filepath, "results": results})
 
+
+
+
+@app.route('/train', methods=['GET'])
+def train_system():
+    create_face_encodings()
+    return "Done, System is now trained!"
 
 
 if __name__ == '__main__': 

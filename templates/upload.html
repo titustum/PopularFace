@@ -1,22 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Details</title>
-</head>
-<body>
-    <h1>Upload Details</h1>
-    <form method="POST" enctype="multipart/form-data">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required><br><br>
-        <label for="name">Occupation:</label>
-        <input type="text" id="occupation" name="occupation" required><br><br>
-        <label for="image">Image:</label>
-        <input type="file" id="image" name="image" required><br><br>
-        <label for="about">About:</label><br>
-        <textarea id="about" name="about" rows="4" cols="50" required></textarea><br><br>
-        <input type="submit" value="Submit">
+{% extends 'layout.html' %}
+
+
+{% block content %}
+
+    <section class="mt-6">
+ 
+        {% with messages = get_flashed_messages() %}
+            {% if messages%}
+                {% for message in messages %} 
+                <div class="py-2 w-[90%] px-4 mb-4 mx-auto rounded-md bg-green-200 text-green-600">
+                    {{message}}
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+            
+
+
+        <form method="POST" enctype="multipart/form-data" class="p-2 mx-auto w-[90%] grid md:col-span-2 md:grid-cols-2 gap-4 bg-white rounded-md">
+                
+            <div>
+                <img id="user_image" src="{{ url_for('static', filename="icons/avatar1.png") }}" accept="image/*" 
+                    class="rounded mt-2 w-full h-[50vh] object-cover object-center">
+            </div>
+
+           
+            <div class="flex flex-col">
+                
+                <h1 class="py-2 text-orange-600 text-3xl fot-bold px-3 border-b-4 border-orange-600">Upload Details</h1> 
+
+                <div class="flex items-center mt-3">
+                    <label class="shrink-0" for="image"><i class="fas fa-image text-2xl text-gray-500"></i></label>
+                    <input type="file" id="image" name="image" class="border py-2 ml-2 rounded px-3 flex-grow" required
+                    onchange="document.getElementById('user_image').src = window.URL.createObjectURL(this.files[0])" >
+                </div>
+
+                <div class="flex items-center mt-3">
+                    <label class="shrink-0" for="name"><i class="fas fa-user text-2xl text-gray-500"></i></label>
+                    <input type="text" id="name" name="name" class="border py-2 ml-2 rounded px-3 flex-grow" placeholder="Person name" required>
+                </div>
+
+                <div class="flex items-center mt-3">
+                    <label class="shrink-0" for="occupation"><i class="fas fa-briefcase text-2xl text-gray-500"></i></label>
+                    <input type="text" id="occupation" name="occupation" class="border py-2 ml-2 rounded px-3 flex-grow" placeholder="Occupation" required>
+                </div>
+
+                <div class="flex items-top mt-3 flex-grow">
+                    <label class="shrink-0" for="about"><i class="fas fa-drivers-license text-2xl text-gray-500"></i></label>
+                    <textarea id="about" name="about" rows="10" class="border py-2 ml-2 rounded px-3 flex-grow h-full" placeholder="About" required></textarea>
+                </div>
+
+                <div class="pl-8 py-2">
+                    <button class="ml-auto w-full text-white bg-black text-lg font-semibold rounded py-2 px-3">Uploaded Details <i class="fas fa-arrow-right"></i></button>
+                </div>
+
+                  
+                
+                     
+            </div> 
+
     </form>
-</body>
-</html>
+
+
+</section>
+
+
+
+    
+{% endblock %}
