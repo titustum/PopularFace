@@ -4,22 +4,52 @@
 {% block content %}
 
 
-<div id="drop-area" class="rounded w-[90%] mx-auto mt-6 py-10 font-medium bg-white border-green-600 border-dashed border-2 text-center">
-    <p><i class="fas fa-upload text-green-600 text-3xl"></i></p>
-    <p>Drag & drop unknown people images here or click to select</p>
+<div id="drop-area" class="rounded w-[90%] mx-auto mt-6 py-10 font-medium bg-white border-cyan-600 border-dashed border-2 text-center">
+    <p><i class="fas fa-upload text-cyan-600 text-3xl"></i></p>
+    <p class="text-lg px-3">Drag & drop unknown people images here or click to select</p>
     <input type="file" id="file-input" style="display: none;" accept="image/*">
 </div>
 <div  class="w-[90%] min-h-[50vh] mx-auto mt-6">
     <div class="grid md:grid-cols-2 xl:grid-cols-3 md:gap-3">
 
-            <div class="p-2 grid md:col-span-2 md:grid-cols-2 gap-4 bg-white rounded-md" id="top_result">
+            <div class="p-2 grid col-span-3 md:grid-cols-2 gap-4 bg-white rounded-md" id="top_result">
                 
                 <!-- top result comes here -->
+
+                <div class="">
+                    <img id="main_image" src="{{ url_for('static', filename='icons/many_people_image.jpg') }}" alt="" class="rounded mt-2 w-full h-[50vh] object-cover object-top">
+                </div>
+
+                <div class="px-3 py-3 flex flex-col">
+                    <div class="text-4xl flex-grow">
+                        We are the leading recognizer of public figures ranging from political arena, sport, showbiz to 
+                        journalism. Don't be left out thinking who the hell the image you are seeing is!<br>
+                        We are here for you.
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-3 mt-4">
+                        <div class="text-center rounded-md flex flex-col justify-center min-h-[10vh] bg-cyan-200 text-black">
+                            <span class="text-xl">97.5%</span>
+                            <span>accuracy</span> 
+                        </div>
+                        <div class="text-center rounded-md flex flex-col justify-center min-h-[10vh] bg-cyan-200 text-black">
+                            <span class="text-xl">200k</span>
+                            <span>Likes</span> 
+                        </div>
+                        <div class="text-center rounded-md flex flex-col justify-center min-h-[10vh] bg-cyan-200 text-black">
+                            <span class="text-xl">1.2M</span>
+                            <span>Recognitions</span> 
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <!-- end -->
 
             </div> 
             
             
-            <div class="flex flex-col col-span-2 xl:col-span-1 rounded-md">
+            <div class="hidden flex-col col-span-2 xl:col-span-1 rounded-md" id="other_right_div">
 
                 <h1 id="right_title" class="text-xl font-bold py-3 px-2 bg-white mt-3 md:mt-0 rounded-t-md">Other Revelant Close Matches</h1>
 
@@ -41,9 +71,33 @@
 
 
 
-<footer class="bg-gray-300 h-[30vh] mt-8 ">
 
-</footer>
+<section class="my-8">
+    <div class=" w-[90%] mx-auto py-4 px-2">
+
+        <div class="px-3 pt-3 pb-6 rounded-md bg-white">
+            <h1 class="py-3 text-2xl text-cyan-600 border-b border-gray-300">About PopularFace</h1>
+            <p class="mt-2 text-xl">
+                This is a web-based facial recognition system that utilizes the face_recognition Python library and Flask framework. 
+                PopularFace.ai is designed to detect popular individuals such as politicians, sportspeople, and journalists, providing basic information about them.
+                The main developer is <a href="https://github.com/titustum" class="font-bold">Titus Kiptanui</a>.
+            </p>
+        </div>
+        
+        <div class="px-3 pt-3 pb-6 rounded-md bg-white mt-4 ">
+            <h1 class="py-3 text-2xl text-cyan-600 border-b border-gray-300">Features</h1>
+            <ul class="mt-2 text-xl list-inside list-disc ml-2">
+                <li><b>Facial Recognition:</b> Upload an image of a person, and PopularFace.ai will identify if they are a popular figure.</li>
+                <li><b>Basic Information:</b>  Receive basic information about the recognized individual, including their name, occupation, and a brief description..</li>
+                <li><b>Image Comparison: </b> View the uploaded image alongside the recognized individual's photo for easy comparison.</li>
+                <li><b>User Feedback:</b>  Users can provide feedback on the recognition results using the like and dislike buttons.</li>
+                <li><b>Social Sharing:</b>  Share the recognition results with others using the share button.</li>
+            </ul>
+        </div>
+     
+    </div>
+</section>
+
 
 <script>
     // Function to handle file input change
@@ -72,7 +126,12 @@
         console.log(data)
 
         let top_res  = document.getElementById('top_result')
+        top_res.classList.remove("col-span-3")
+        top_res.classList.add("md:col-span-2")
+
         let other_res  = document.getElementById('other_results')
+        document.getElementById("other_right_div").classList.remove("hidden")
+        document.getElementById("other_right_div").classList.add("flex")
         
         top_res.innerHTML = ''
         other_res.innerHTML = ''
@@ -93,7 +152,7 @@
                 <div class="flex flex-col">
                     <div class="flex flex justify-between items-center border-b-2 border-orange-600">
                         <h1 class="text-4xl font-bold py-2 uppercase">${top_result.name} </h1>
-                        <span class="text-green-600">${top_result.match} Match</span>
+                        
                     </div>
 
                     
@@ -101,7 +160,10 @@
                         <div class="py-2 text-orange-700 text-lg">
                             ${top_result.occupation}
                         </div>
-                        <div class="p-2">
+                        <div>
+                            <span class="text-green-600 text-xl font-semibold">${top_result.match} Match</span>
+                        </div>
+                        <div class="py-2">
                             ${top_result.about}
                         </div>
                         

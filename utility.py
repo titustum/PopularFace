@@ -92,7 +92,7 @@ def check_face(unknown_image_path):
 
         for user in users:
             if user.id in user_ids:
-                percentage = round(((1 - distances[counter]) * 100), 2)
+                percentage = round(((1 - distances[counter]) * 100), 1)
                 percentage = max(0, min(percentage, 100))
                 user.about = user.about if len(user.about) <= 500 else user.about[:300] + "..."
                 results.append({
