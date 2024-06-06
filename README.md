@@ -31,13 +31,17 @@ To run PopularFace.ai locally, follow these steps:
    cd PopularFace
    pip install -r requirements.txt
    ```
+3. **Update Enviroment Variables**: Create the .env file and update variables to fit your requirements.
+   ```
+   cp .env.example .env
+   ```
 
-3. **Run the Application**: Start the Flask server to run the application.
+4. **Run the Application**: Start the Flask server to run the application.
    ```
    python app.py
    ```
 
-4. **Access PopularFace.ai**: Open a web browser and go to `http://localhost:5000` to access the PopularFace.ai web interface.
+5. **Access PopularFace.ai**: Open a web browser and go to `http://localhost:5000` to access the PopularFace.ai web interface.
 
 ## Contributing
 
