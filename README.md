@@ -28,7 +28,7 @@ To run PopularFace.ai locally, follow these steps:
 
 2. **Install Dependencies**: Navigate to the project directory and install the required dependencies using pip.
    ```
-   cd PopularFace.ai
+   cd PopularFace
    pip install -r requirements.txt
    ```
 
